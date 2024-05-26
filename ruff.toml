@@ -1,0 +1,34 @@
+line-length = 120
+indent-width = 4
+
+[lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "DJ",
+    "I",
+    "ANN"
+]
+ignore = ["ANN101", "ANN204", "ANN002", "ANN003", "ANN102"]
+
+[lint.per-file-ignores]
+"**/admin.py" = ["F401"]
+"**/models.py" = ["F401"]
+"**/tests.py" = ["F401"]
+"**/migrations/*.py" = [
+    "F",
+    "E",
+    "W",
+    "DJ",
+    "I",
+    "ANN"
+]
+"manage.py" = [
+    "F",
+    "E",
+    "W",
+    "DJ",
+    "I",
+    "ANN"
+]

@@ -1,0 +1,7 @@
+python-dotenv==1.0.1
+SQLAlchemy==2.0.30
+psycopg==3.1.19
+requests==2.32.2
+beautifulsoup4==4.12.3
+ruff==0.4.5
+mypy==1.10.0
