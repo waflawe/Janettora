@@ -1,6 +1,5 @@
 journal.py
 .env
 venv/
-database/
 **/__pycache__/
 .idea/
