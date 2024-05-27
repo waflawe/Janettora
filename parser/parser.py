@@ -87,30 +87,32 @@ class WorderdictParser(object):
         tasks = []
 
         for page in range(0, count):
-            soup = await self.get_soup(self.url + f"?page={page}")
-            task = asyncio.create_task(self.parse_page(soup))
+            task = asyncio.create_task(self.parse_page(page))
             tasks.append(task)
-            if self.pages_counter % 100 == 0:
-                logger.info(f"Выпотрошено {self.pages_counter} страниц ({self.counter} слов).")
+
+        await asyncio.gather(*tasks)
 
         if self.pages_counter % 100 != 0:
             logger.info(f"Выпотрошено {self.pages_counter} страниц ({self.counter} слов).")
 
-        await asyncio.gather(*tasks)
-
-    async def parse_page(self, soup: BeautifulSoup) -> None:
+    async def parse_page(self, page: int) -> None:
         """
         Parse one page and insert parsed data to database.
 
-        :param soup: BeautifulSoup object of page.
+        :param page: Number of page that will be parsed.
         """
 
+        soup = await self.get_soup(self.url + f"?page={page}")
         self.pages_counter += 1
-        all_cards = (
-            soup
-            .find("div", class_="w-full lg:w-4/5")
-            .find_all("div", class_="py-2 lg:py-4")
-        )
+        try:
+            all_cards = (
+                soup
+                .find("div", class_="w-full lg:w-4/5")
+                .find_all("div", class_="py-2 lg:py-4")
+            )
+        except AttributeError:
+            logger.info(f"Парсер был забанен! Текущие счетчики: {self.pages_counter} страниц, {self.counter} слов.")
+            quit(0)
 
         for card in all_cards:
             word_attributes = (
@@ -121,6 +123,9 @@ class WorderdictParser(object):
             if all(word_attributes):
                 utils.create_word(*word_attributes)
                 self.counter += 1
+
+        if self.pages_counter % 100 == 0:
+            logger.info(f"Выпотрошено {self.pages_counter} страниц ({self.counter} слов).")
 
     async def get_and_validate_english(self, card: BeautifulSoup) -> str | None:
         return (
@@ -145,11 +150,14 @@ class WorderdictParser(object):
         return None
 
     async def get_and_validate_part_of_speech(self, card: BeautifulSoup) -> str | None:
-        part_of_speech = (
-            card
-            .find("div", class_="pb-1")
-            .text
-        )
+        try:
+            part_of_speech = (
+                card
+                .find("div", class_="pb-1")
+                .text
+            )
+        except AttributeError:
+            return None
         part_of_speech = "_".join(part_of_speech.lower().split(" "))
 
         if part_of_speech in self.valid_part_of_speech_values:
