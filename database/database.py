@@ -1,18 +1,25 @@
+import sys
+from importlib import import_module
+from pathlib import Path
+
 from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, SQLALCHEMY_DEBUG_MODE
+project_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(project_dir))
+
+config = import_module("config")
 
 engine = create_engine(
     URL.create(
         drivername="postgresql+psycopg",
-        username=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME
+        username=config.DB_USER,
+        password=config.DB_PASSWORD,
+        host=config.DB_HOST,
+        port=config.DB_PORT,
+        database=config.DB_NAME
     ),
-    echo=SQLALCHEMY_DEBUG_MODE,
+    echo=config.SQLALCHEMY_DEBUG_MODE,
     pool_size=1
 )
 

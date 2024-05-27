@@ -1,6 +1,7 @@
-from database.database import Model, session_factory
+from database.database import Model, engine, session_factory
 
 __all__ = [
     "session_factory",
-    "Model"
+    "Model",
+    "engine"
 ]

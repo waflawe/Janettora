@@ -3,3 +3,4 @@ journal.py
 venv/
 **/__pycache__/
 .idea/
+.logs/
