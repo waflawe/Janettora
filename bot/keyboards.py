@@ -1,5 +1,16 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+PARTS_OF_SPEECH_TRANSLATIONS = {
+    "Существительные": "NOUN",
+    "Прилагательные": "ADJECTIVE",
+    "Глаголы": "VERB",
+    "Фразовые глаголы": "PHRASAL_VERB",
+    "Неправильные глаголы": "IRREGULAR_VERB",
+    "Наречия": "ADVERB",
+    "Идиомы": "IDIOM",
+    "Фразы": "PHRASE"
+}
+
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
         [
