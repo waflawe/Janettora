@@ -1,15 +1,13 @@
-import random
-
 import asyncio
+import random
+import sys
 from importlib import import_module
 from pathlib import Path
-import sys
-from loguru import logger
-from sqlalchemy import select
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import Message
 from aiogram.filters import CommandStart
+from aiogram.types import Message
+from loguru import logger
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
@@ -46,7 +44,8 @@ async def start_training_handler(message: Message) -> None:
         options=options,
         type="quiz",
         correct_option_id=options.index(russian),
-        is_anonymous=True
+        is_anonymous=True,
+        open_period=10
     )
 
 

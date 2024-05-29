@@ -1,11 +1,13 @@
-from database import session_factory
-from database.models import Word, WordPartsOfSpeech
-from sqlalchemy import select
+import random
+import sys
 import typing
 from importlib import import_module
 from pathlib import Path
-import sys
-import random
+
+from sqlalchemy import select
+
+from database import session_factory
+from database.models import Word, WordPartsOfSpeech
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))

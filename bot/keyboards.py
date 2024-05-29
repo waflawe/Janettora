@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 PARTS_OF_SPEECH_TRANSLATIONS = {
     "Существительные": "NOUN",
