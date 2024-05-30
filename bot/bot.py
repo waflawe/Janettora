@@ -67,7 +67,7 @@ async def settings_handler(message: Message) -> None:
 async def change_qac_handler(callback: CallbackQuery) -> None:
     utils.change_quiz_answers_count(callback.from_user.id)
     settings = utils.get_user_settings(callback.from_user.id)
-    await callback.message.answer("Настройки вашего пользователя:", reply_markup=keyboards.settings_kb(settings))
+    await callback.message.edit_reply_markup(reply_markup=keyboards.settings_kb(settings))
     await callback.answer()
 
 
@@ -75,7 +75,7 @@ async def change_qac_handler(callback: CallbackQuery) -> None:
 async def change_wpos_handler(callback: CallbackQuery) -> None:
     utils.change_words_part_of_speech(callback.from_user.id)
     settings = utils.get_user_settings(callback.from_user.id)
-    await callback.message.answer("Настройки вашего пользователя:", reply_markup=keyboards.settings_kb(settings))
+    await callback.message.edit_reply_markup(reply_markup=keyboards.settings_kb(settings))
     await callback.answer()
 
 
