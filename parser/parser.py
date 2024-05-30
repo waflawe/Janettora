@@ -166,7 +166,7 @@ class WorderdictParser(object):
 
 
 def main() -> None:
-    models.destroy_word_model(), models.create_word_model()
+    utils.destroy_word_model(), utils.create_word_model()
 
     WorderdictParser.configure(DEFAULT_WORDERDICT_PARSE_URL)
     p = WorderdictParser()

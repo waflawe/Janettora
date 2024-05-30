@@ -13,3 +13,4 @@ DB_PORT: int = int(os.getenv("DB_PORT"))
 SQLALCHEMY_DEBUG_MODE: int = int(os.getenv("SQLALCHEMY_DEBUG_MODE"))
 
 TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN")
+DEBUG: int = int(os.getenv("DEBUG"))

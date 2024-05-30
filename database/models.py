@@ -1,7 +1,7 @@
 import typing
 from enum import StrEnum
 
-from sqlalchemy import Column, Enum, MetaData
+from sqlalchemy import Column, Enum, MetaData, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Model, engine
@@ -36,16 +36,18 @@ class UserStatistics(Model):
     __tablename__ = "statistics"
     metadata = MetaData()
 
-    telegram_id: Mapped[int] = mapped_column(primary_key=True)
-    total_quizzes: Mapped[int]
-    total_correct: Mapped[int]
-    total_incorrect: Mapped[int]
+    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    total_quizzes: Mapped[int] = mapped_column(default=0)
+    total_correct: Mapped[int] = mapped_column(default=0)
+    total_incorrect: Mapped[int] = mapped_column(default=0)
 
 
-def create_word_model() -> None:
-    Word.metadata.create_all(engine)
-    UserStatistics.metadata.create_all(engine)
+class UserSettings(Model):
+    __tablename__ = "settings"
+    metadata = MetaData()
 
+    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    words_part_of_speech: Mapped[str | None]
+    quiz_answers_count: Mapped[int] = mapped_column(default=4)
 
-def destroy_word_model() -> None:
-    Word.metadata.drop_all(engine)
+    QUIZ_ANSWERS_COUNT_RANGE = range(4, 7)
