@@ -50,4 +50,4 @@ class UserSettings(Model):
     words_part_of_speech: Mapped[str | None]
     quiz_answers_count: Mapped[int] = mapped_column(default=4)
 
-    QUIZ_ANSWERS_COUNT_RANGE = range(4, 7)
+    QUIZ_ANSWERS_COUNT_RANGE = range(3, 9)

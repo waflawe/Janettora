@@ -9,18 +9,7 @@ project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
 models = import_module("database.models")
-
-PARTS_OF_SPEECH_TRANSLATIONS = {
-    "Любые": None,
-    "Существительные": "NOUN",
-    "Прилагательные": "ADJECTIVE",
-    "Глаголы": "VERB",
-    "Фразовые глаголы": "PHRASAL_VERB",
-    "Неправильные глаголы": "IRREGULAR_VERB",
-    "Наречия": "ADVERB",
-    "Идиомы": "IDIOM",
-    "Фразы": "PHRASE"
-}
+constants = import_module("constants", "bot")
 
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
@@ -39,9 +28,9 @@ main_kb = ReplyKeyboardMarkup(
 def settings_kb(settings: models.UserSettings) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     words_part_of_speech = list(
-        PARTS_OF_SPEECH_TRANSLATIONS.keys()
+        constants.PARTS_OF_SPEECH_TRANSLATIONS.keys()
     )[list(
-        PARTS_OF_SPEECH_TRANSLATIONS.values()
+        constants.PARTS_OF_SPEECH_TRANSLATIONS.values()
     ).index(
         settings.words_part_of_speech
     )]

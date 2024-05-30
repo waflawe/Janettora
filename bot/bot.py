@@ -16,6 +16,7 @@ sys.path.append(str(project_dir))
 config = import_module("config")
 keyboards = import_module("keyboards", "bot")
 utils = import_module("database.utils")
+constants = import_module("constants", "bot")
 
 logger.add(".logs/bot.log", level="INFO")
 
@@ -53,7 +54,7 @@ async def start_training_handler(message: Message) -> None:
         type="quiz",
         correct_option_id=options.index(russian),
         is_anonymous=True,
-        open_period=20
+        open_period=constants.QUIZ_ANSWER_TIME_BY_USER_ANSWERS_COUNT[settings.quiz_answers_count]
     )
 
 

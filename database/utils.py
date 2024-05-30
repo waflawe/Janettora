@@ -14,6 +14,7 @@ sys.path.append(str(project_dir))
 
 keyboards = import_module("keyboards", "bot")
 config = import_module("config")
+constants = import_module("constants", "bot")
 
 ########################################
 # PRIVATE UTILITIES FOR CODE REDUCTION #
@@ -171,7 +172,7 @@ def change_words_part_of_speech(telegram_id: int) -> None:
 
     settings = get_user_settings(telegram_id)
     words_part_of_speech = settings.words_part_of_speech
-    pos_english = list(keyboards.PARTS_OF_SPEECH_TRANSLATIONS.values())
+    pos_english = list(constants.PARTS_OF_SPEECH_TRANSLATIONS.values())
     try:
         words_part_of_speech = pos_english[pos_english.index(words_part_of_speech)+1]
     except IndexError:
