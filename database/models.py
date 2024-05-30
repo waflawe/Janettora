@@ -1,7 +1,7 @@
 import typing
 from enum import StrEnum
 
-from sqlalchemy import Column, Enum, MetaData, BigInteger
+from sqlalchemy import BigInteger, Column, Enum, MetaData
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Model, engine

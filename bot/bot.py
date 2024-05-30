@@ -6,7 +6,7 @@ from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
 

@@ -1,9 +1,9 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from importlib import import_module
 import sys
+from importlib import import_module
 from pathlib import Path
+
+from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))

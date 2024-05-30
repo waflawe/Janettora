@@ -6,8 +6,8 @@ from pathlib import Path
 
 from sqlalchemy import select, update
 
-from database import session_factory, engine
-from database.models import Word, WordPartsOfSpeech, UserSettings, UserStatistics, Model
+from database import engine, session_factory
+from database.models import Model, UserSettings, UserStatistics, Word, WordPartsOfSpeech
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
