@@ -4,7 +4,7 @@ from enum import StrEnum
 from sqlalchemy import BigInteger, Column, Enum, MetaData
 from sqlalchemy.orm import Mapped, mapped_column
 
-from database import Model, engine
+from database import Model
 
 
 class WordPartsOfSpeech(StrEnum):

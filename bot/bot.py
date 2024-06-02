@@ -38,7 +38,7 @@ async def start_handler(message: Message) -> None:
 
 @dp.message(F.text == "Тренировка")
 async def start_training_handler(message: Message) -> None:
-    english, options, correct_option_id, open_period = bot_utils.get_random_quiz(message.from_user.id)
+    english, options, correct_option_id, open_period = await bot_utils.get_random_quiz(message.from_user.id)
     message = await message.reply_poll(
         question=f"Как переводится слово {english}?",
         options=options,
@@ -59,13 +59,13 @@ async def settings_handler(message: Message) -> None:
 @dp.callback_query(F.data == "change_qac")
 async def change_qac_handler(callback: CallbackQuery) -> None:
     utils.change_quiz_answers_count(callback.from_user.id)
-    bot_utils.send_updated_settings_keyboard_by_callback(callback)
+    await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
 @dp.callback_query(F.data == "change_wpos")
 async def change_wpos_handler(callback: CallbackQuery) -> None:
     utils.change_words_part_of_speech(callback.from_user.id)
-    bot_utils.send_updated_settings_keyboard_by_callback(callback)
+    await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
 @dp.message(F.text == "Статистика")

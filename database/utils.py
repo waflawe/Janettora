@@ -209,7 +209,5 @@ def destroy_word_model() -> None:
 
 
 def recreate_settings_and_statistics_model() -> None:
-    if config.DEBUG:
-        UserSettings.metadata.drop_all(engine), UserStatistics.metadata.drop_all(engine)
     UserSettings.metadata.create_all(engine)
     UserStatistics.metadata.create_all(engine)

@@ -19,7 +19,7 @@ engine = create_engine(
         port=config.DB_PORT,
         database=config.DB_NAME
     ),
-    echo=config.SQLALCHEMY_DEBUG_MODE,
+    echo=config.DEBUG,
     pool_size=1
 )
 
