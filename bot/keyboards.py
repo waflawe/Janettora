@@ -14,11 +14,11 @@ constants = import_module("constants", "bot")
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Настройки"),
-            KeyboardButton(text="Статистика")
+            KeyboardButton(text="Тренировка")
         ],
         [
-            KeyboardButton(text="Тренировка")
+            KeyboardButton(text="Настройки"),
+            KeyboardButton(text="Статистика")
         ]
     ],
     resize_keyboard=True

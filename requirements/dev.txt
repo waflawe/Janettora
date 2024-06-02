@@ -8,3 +8,4 @@ aiohttp==3.9.5
 asyncio==3.4.3
 loguru==0.7.2
 aiogram==3.6.0
+redis==5.0.4

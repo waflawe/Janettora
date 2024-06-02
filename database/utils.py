@@ -12,7 +12,6 @@ from database.models import Model, UserSettings, UserStatistics, Word, WordParts
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
-keyboards = import_module("keyboards", "bot")
 config = import_module("config")
 constants = import_module("constants", "bot")
 
@@ -52,16 +51,16 @@ def _get_user_related_model_object(model: typing.Type[Model], telegram_id: int) 
         return result
 
 
-def _update_user_settings(**kwargs) -> None:
+def _update_user_related_model_object(model: typing.Type[Model], **kwargs) -> None:
     """
-    Update user settings by kwargs.
+    Update user related model object by kwargs.
 
     :param kwargs: User telegram id and the values that need to be updated.
     """
 
     with session_factory() as session:
         session.execute(
-            update(UserSettings),
+            update(model),
             [
                 kwargs
             ]
@@ -160,7 +159,11 @@ def change_quiz_answers_count(telegram_id: int) -> None:
         quiz_answers_count += 1
     else:
         quiz_answers_count = UserSettings.QUIZ_ANSWERS_COUNT_RANGE.start
-    _update_user_settings(telegram_id=telegram_id, quiz_answers_count=quiz_answers_count)
+    _update_user_related_model_object(
+        UserSettings,
+        telegram_id=telegram_id,
+        quiz_answers_count=quiz_answers_count
+    )
 
 
 def change_words_part_of_speech(telegram_id: int) -> None:
@@ -177,7 +180,26 @@ def change_words_part_of_speech(telegram_id: int) -> None:
         words_part_of_speech = pos_english[pos_english.index(words_part_of_speech)+1]
     except IndexError:
         words_part_of_speech = pos_english[0]
-    _update_user_settings(telegram_id=telegram_id, words_part_of_speech=words_part_of_speech)
+    _update_user_related_model_object(
+        UserSettings,
+        telegram_id=telegram_id,
+        words_part_of_speech=words_part_of_speech
+    )
+
+
+def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> None:
+    """
+
+
+    :param telegram_id: User telegram id
+    :param is_correct:
+    """
+
+    statistics = _get_user_related_model_object(UserStatistics, telegram_id)
+    kwargs = {"telegram_id": telegram_id, "total_quizzes": statistics.total_quizzes+1}
+    attr = "total_correct" if is_correct else "total_incorrect"
+    kwargs[attr] = getattr(statistics, attr) + 1
+    _update_user_related_model_object(UserStatistics, **kwargs)
 
 
 ###############################

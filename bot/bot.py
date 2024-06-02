@@ -6,9 +6,10 @@ from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, PollAnswer
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
+from redis.asyncio.client import Redis
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
@@ -23,6 +24,8 @@ logger.add(".logs/bot.log", level="INFO")
 bot = Bot(config.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 
+redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_NUMBER)
+
 
 @dp.message(CommandStart())
 async def start_handler(message: Message) -> None:
@@ -31,7 +34,7 @@ async def start_handler(message: Message) -> None:
         utils.create_user_statistics(message.from_user.id)
     except IntegrityError:
         pass
-    await message.answer(f"Добрый день, @{message.from_user.username}!"
+    await message.answer(f"Добрый день, @{message.from_user.username}!\n"
                          f"\n"
                          f"Это бот для тренеровки словарного запаса английского языка. "
                          f"Я предлагаю слово на английском и даю варианты ответов на русском, "
@@ -48,14 +51,16 @@ async def start_training_handler(message: Message) -> None:
         [utils.get_random_word(settings.words_part_of_speech)[1] for _ in range(settings.quiz_answers_count-1)]
     )
     random.shuffle(options)
-    await message.reply_poll(
+    correct_option_id = options.index(russian)
+    message = await message.reply_poll(
         question=f"Как переводится слово {english}?",
         options=options,
         type="quiz",
-        correct_option_id=options.index(russian),
-        is_anonymous=True,
+        correct_option_id=correct_option_id,
+        is_anonymous=False,
         open_period=constants.QUIZ_ANSWER_TIME_BY_USER_ANSWERS_COUNT[settings.quiz_answers_count]
     )
+    await redis.set(f"{message.poll.id}", correct_option_id, 60)
 
 
 @dp.message(F.text == "Настройки")
@@ -78,6 +83,33 @@ async def change_wpos_handler(callback: CallbackQuery) -> None:
     settings = utils.get_user_settings(callback.from_user.id)
     await callback.message.edit_reply_markup(reply_markup=keyboards.settings_kb(settings))
     await callback.answer()
+
+
+@dp.message(F.text == "Статистика")
+async def statistics_handler(message: Message) -> None:
+    statistics = utils.get_user_statistics(message.from_user.id)
+    if statistics.total_incorrect != 0:
+        cor_to_incor = round((statistics.total_correct/statistics.total_incorrect), 2)
+    else:
+        cor_to_incor = statistics.total_correct
+    await message.answer(
+        f"Вот ваша статистика за все время использования бота:\n"
+        f"\n"
+        f"Всего пройдено викторин: {statistics.total_quizzes}\n"
+        f"Правильных ответов: {statistics.total_correct}\n"
+        f"Неправильных ответов: {statistics.total_incorrect}\n"
+        f"Отношение правильных ответов к неправильным: {cor_to_incor}"
+    )
+
+
+@dp.poll_answer()
+async def quiz_answer_handler(poll_answer: PollAnswer) -> None:
+    correct_option_id = await redis.get(f"{poll_answer.poll_id}")
+    correct_option_id = int(correct_option_id.decode("utf-8"))
+    utils.update_correct_or_incorrect_answers(
+        poll_answer.user.id,
+        correct_option_id == poll_answer.option_ids[0]
+    )
 
 
 @dp.message()
