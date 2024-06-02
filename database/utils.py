@@ -5,6 +5,7 @@ from importlib import import_module
 from pathlib import Path
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 
 from database import engine, session_factory
 from database.models import Model, UserSettings, UserStatistics, Word, WordPartsOfSpeech
@@ -85,26 +86,18 @@ def create_word(english: str, russian: str, part_of_speech: WordPartsOfSpeech) -
     _create_object(Word, english=english, russian=russian, part_of_speech=part_of_speech)
 
 
-def create_user_settings(telegram_id: int) -> None:
+def register_user_in_databases(telegram_id: int) -> None:
     """
-    Create UserSettings from user telegram id.
+    Register user in the UserSettings and UserStatistics models.
 
     :param telegram_id: User telegram id
-    :return: Created UserSettings object
     """
 
-    _create_object(UserSettings, telegram_id=telegram_id)
-
-
-def create_user_statistics(telegram_id: int) -> None:
-    """
-    Create UserStatistics from user telegram id.
-
-    :param telegram_id: User telegram id
-    :return: Created UserStatistics object
-    """
-
-    _create_object(UserStatistics, telegram_id=telegram_id)
+    try:
+        _create_object(UserSettings, telegram_id=telegram_id)
+        _create_object(UserStatistics, telegram_id=telegram_id)
+    except IntegrityError:
+        pass
 
 
 def get_random_word(part_of_speech: typing.Optional[str] = None) -> typing.Tuple[str, str]:
@@ -189,10 +182,10 @@ def change_words_part_of_speech(telegram_id: int) -> None:
 
 def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> None:
     """
-
+    Update the total_correct or total_incorrect field in the user's statistics.
 
     :param telegram_id: User telegram id
-    :param is_correct:
+    :param is_correct: Flag to indicate the field to be updated
     """
 
     statistics = _get_user_related_model_object(UserStatistics, telegram_id)
