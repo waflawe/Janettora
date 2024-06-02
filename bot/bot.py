@@ -17,7 +17,8 @@ keyboards = import_module("keyboards", "bot")
 utils = import_module("database.utils")
 bot_utils = import_module("utils", "bot")
 
-logger.add(".logs/bot.log", level="INFO")
+if config.DEBUG:
+    logger.add(".logs/bot-debug.log", level="DEBUG", catch=True)
 
 bot = Bot(config.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
@@ -27,7 +28,9 @@ redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB
 
 @dp.message(CommandStart())
 async def start_handler(message: Message) -> None:
-    utils.register_user_in_databases(message.from_user.id)
+    is_registered = utils.register_user_in_databases(message.from_user.id)
+    if is_registered and config.DEBUG:
+        logger.debug(f"Зарегестрировал {message.from_user.id}")
     await message.answer(f"Добрый день, @{message.from_user.username}!\n"
                          f"\n"
                          f"Это бот для тренеровки словарного запаса английского языка. "
@@ -47,6 +50,11 @@ async def start_training_handler(message: Message) -> None:
         is_anonymous=False,
         open_period=open_period
     )
+    if config.DEBUG:
+        logger.debug(
+            f"Создал викторину {message.poll.id}. Слово {english}, перевод - {options[correct_option_id]}, "
+            f"время действия виторины - {open_period}"
+        )
     await redis.set(f"{message.poll.id}", correct_option_id, open_period)
 
 
@@ -59,12 +67,16 @@ async def settings_handler(message: Message) -> None:
 @dp.callback_query(F.data == "change_qac")
 async def change_qac_handler(callback: CallbackQuery) -> None:
     utils.change_quiz_answers_count(callback.from_user.id)
+    if config.DEBUG:
+        logger.debug(f"Количество ответов для пользователя {callback.from_user.id} изменено")
     await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
 @dp.callback_query(F.data == "change_wpos")
 async def change_wpos_handler(callback: CallbackQuery) -> None:
     utils.change_words_part_of_speech(callback.from_user.id)
+    if config.DEBUG:
+        logger.debug(f"Части речи слов в викторинах для пользователя {callback.from_user.id} изменены")
     await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
@@ -86,9 +98,12 @@ async def statistics_handler(message: Message) -> None:
 async def quiz_answer_handler(poll_answer: PollAnswer) -> None:
     correct_option_id = await redis.get(f"{poll_answer.poll_id}")
     correct_option_id = int(correct_option_id.decode("utf-8"))
+    is_correct = correct_option_id == poll_answer.option_ids[0]
+    if config.DEBUG:
+        logger.debug(f"Викторина {poll_answer.poll_id} решена {poll_answer.user.id} как {is_correct}")
     utils.update_correct_or_incorrect_answers(
         poll_answer.user.id,
-        correct_option_id == poll_answer.option_ids[0]
+        is_correct
     )
 
 

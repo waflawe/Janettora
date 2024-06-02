@@ -86,18 +86,20 @@ def create_word(english: str, russian: str, part_of_speech: WordPartsOfSpeech) -
     _create_object(Word, english=english, russian=russian, part_of_speech=part_of_speech)
 
 
-def register_user_in_databases(telegram_id: int) -> None:
+def register_user_in_databases(telegram_id: int) -> bool:
     """
     Register user in the UserSettings and UserStatistics models.
 
     :param telegram_id: User telegram id
+    :return: Flag is user registered
     """
 
     try:
         _create_object(UserSettings, telegram_id=telegram_id)
         _create_object(UserStatistics, telegram_id=telegram_id)
+        return True
     except IntegrityError:
-        pass
+        return False
 
 
 def get_random_word(part_of_speech: typing.Optional[str] = None) -> typing.Tuple[str, str]:
