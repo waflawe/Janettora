@@ -41,7 +41,8 @@ async def start_handler(message: Message) -> None:
 
 @dp.message(F.text == "Тренировка")
 async def start_training_handler(message: Message) -> None:
-    english, options, correct_option_id, open_period = await bot_utils.get_random_quiz(message.from_user.id)
+    telegram_id = message.from_user.id
+    english, options, correct_option_id, open_period = await bot_utils.get_random_quiz(telegram_id)
     message = await message.reply_poll(
         question=f"Как переводится слово {english}?",
         options=options,
@@ -56,6 +57,7 @@ async def start_training_handler(message: Message) -> None:
             f"время действия виторины - {open_period}"
         )
     await redis.set(f"{message.poll.id}", correct_option_id, open_period)
+    await bot_utils.check_quiz_completion(telegram_id, message.poll)
 
 
 @dp.message(F.text == "Настройки")
@@ -96,14 +98,11 @@ async def statistics_handler(message: Message) -> None:
 
 @dp.poll_answer()
 async def quiz_answer_handler(poll_answer: PollAnswer) -> None:
-    correct_option_id = await redis.get(f"{poll_answer.poll_id}")
-    correct_option_id = int(correct_option_id.decode("utf-8"))
-    is_correct = correct_option_id == poll_answer.option_ids[0]
-    if config.DEBUG:
-        logger.debug(f"Викторина {poll_answer.poll_id} решена {poll_answer.user.id} как {is_correct}")
-    utils.update_correct_or_incorrect_answers(
+    await bot_utils.quiz_answer_check(
         poll_answer.user.id,
-        is_correct
+        poll_answer.poll_id,
+        redis=redis,
+        answer_id=poll_answer.option_ids[0]
     )
 
 
