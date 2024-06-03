@@ -18,8 +18,12 @@ utils = import_module("database.utils")
 models = import_module("database.models")
 constants = import_module("constants", "bot")
 
-if config.DEBUG:
-    logger.add(".logs/bot-debug.log", level="DEBUG", catch=True)
+
+def debug_only(record):
+    return record["level"].name == "DEBUG" and config.DEBUG
+
+
+logger.add(".logs/bot-debug.log", level="DEBUG", catch=True, filter=debug_only)
 
 
 async def send_updated_settings_keyboard_by_callback(callback: CallbackQuery) -> None:
@@ -30,6 +34,7 @@ async def send_updated_settings_keyboard_by_callback(callback: CallbackQuery) ->
     """
 
     settings = utils.get_user_settings(callback.from_user.id)
+    logger.debug(f"Success get SETTINGS for: {callback.from_user.id} user.")
     await callback.message.edit_reply_markup(reply_markup=keyboards.settings_kb(settings))
     await callback.answer()
 
@@ -58,14 +63,19 @@ async def get_random_quiz(telegram_id: int) -> typing.Tuple[str, typing.List, in
     """
 
     settings = utils.get_user_settings(telegram_id)
+    logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
     english, russian = utils.get_random_word(settings.words_part_of_speech)
+    logger.debug(f"Success get random word: {english}, translation: {russian}.")
     options = [russian]
     options.extend(
         [utils.get_random_word(settings.words_part_of_speech)[1] for _ in range(settings.quiz_answers_count - 1)]
     )
+    logger.debug(f"Success extend answers list: {options}.")
     random.shuffle(options)
+    logger.debug(f"Success shuffle options list: {options}.")
     correct_option_id = options.index(russian)
     open_period = constants.QUIZ_ANSWER_TIME_BY_USER_ANSWERS_COUNT[settings.quiz_answers_count]
+    logger.debug(f"Success get open period for quiz: {open_period}.")
 
     return english, options, correct_option_id, open_period
 
@@ -91,13 +101,14 @@ async def quiz_answer_check(
     if is_correct is None:
         correct_option_id = await redis.get(f"{poll_id}")
         correct_option_id = int(correct_option_id.decode("utf-8"))
+        logger.debug(f"Success get correct option id from redis: {correct_option_id} for: {poll_id} poll.")
         is_correct = correct_option_id == answer_id
-    if config.DEBUG:
-        logger.debug(f"Викторина {poll_id} решена {telegram_id} как {is_correct}")
-    utils.update_correct_or_incorrect_answers(
+    logger.debug(f"Quiz: {poll_id} completed: {telegram_id} as: {is_correct}.")
+    update_correct_or_incorrect_answers(
         telegram_id,
         is_correct
     )
+    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
 
 
 async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
@@ -109,6 +120,74 @@ async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
     """
 
     await asyncio.sleep(poll.open_period)
+    is_correct = True
     if poll.total_voter_count == 0:
         is_correct = False
+        logger.debug(f"Poll: {poll.id} passed NOT in-time.")
         await quiz_answer_check(telegram_id, int(poll.id), is_correct)
+    if is_correct:
+        logger.debug(f"Poll: {poll.id} passed in-time.")
+
+
+def change_quiz_answers_count(telegram_id: int) -> None:
+    """
+    Change quiz_answers_count user setting.
+
+    :param telegram_id: User telegram id
+    """
+
+    settings = utils.get_user_settings(telegram_id)
+    logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
+    quiz_answers_count = settings.quiz_answers_count
+    logger.debug(f"Quiz answers count BEFORE update: {quiz_answers_count}.")
+    if quiz_answers_count+1 in utils.get_quiz_answers_count_range():
+        quiz_answers_count += 1
+    else:
+        quiz_answers_count = utils.get_quiz_answers_count_range().start
+    logger.debug(f"Quiz answers count AFTER update: {quiz_answers_count}.")
+    utils.update_user_settings(
+        telegram_id=telegram_id,
+        quiz_answers_count=quiz_answers_count
+    )
+    logger.debug(f"Success update SETTINGS for: {telegram_id} user.")
+
+
+def change_words_part_of_speech(telegram_id: int) -> None:
+    """
+    Change words_part_of_speech user setting.
+
+    :param telegram_id: User telegram id
+    """
+
+    settings = utils.get_user_settings(telegram_id)
+    logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
+    words_part_of_speech = settings.words_part_of_speech
+    logger.debug(f"Words part of speech BEFORE update: {words_part_of_speech}.")
+    pos_english = list(constants.PARTS_OF_SPEECH_TRANSLATIONS.values())
+    try:
+        words_part_of_speech = pos_english[pos_english.index(words_part_of_speech)+1]
+    except IndexError:
+        words_part_of_speech = pos_english[0]
+    logger.debug(f"Words part of speech AFTER update: {words_part_of_speech}.")
+    utils.update_user_settings(
+        telegram_id=telegram_id,
+        words_part_of_speech=words_part_of_speech
+    )
+    logger.debug(f"Success update SETTINGS for: {telegram_id} user.")
+
+
+def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> None:
+    """
+    Update the total_correct or total_incorrect field in the user's statistics.
+
+    :param telegram_id: User telegram id
+    :param is_correct: Flag to indicate the field to be updated
+    """
+
+    statistics = utils.get_user_statistics(telegram_id)
+    logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
+    kwargs = {"telegram_id": telegram_id, "total_quizzes": statistics.total_quizzes+1}
+    attr = "total_correct" if is_correct else "total_incorrect"
+    kwargs[attr] = getattr(statistics, attr) + 1
+    utils.update_user_statistics(**kwargs)
+    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")

@@ -141,60 +141,38 @@ def get_user_statistics(telegram_id: int) -> UserStatistics:
     return _get_user_related_model_object(UserStatistics, telegram_id)
 
 
-def change_quiz_answers_count(telegram_id: int) -> None:
+def update_user_settings(telegram_id: int, **kwargs) -> None:
     """
-    Change quiz_answers_count user setting.
+    Update user settings.
 
     :param telegram_id: User telegram id
+    :param kwargs: Fields and his values to update
     """
 
-    settings = get_user_settings(telegram_id)
-    quiz_answers_count = settings.quiz_answers_count
-    if quiz_answers_count+1 in UserSettings.QUIZ_ANSWERS_COUNT_RANGE:
-        quiz_answers_count += 1
-    else:
-        quiz_answers_count = UserSettings.QUIZ_ANSWERS_COUNT_RANGE.start
     _update_user_related_model_object(
         UserSettings,
         telegram_id=telegram_id,
-        quiz_answers_count=quiz_answers_count
+        **kwargs
     )
 
 
-def change_words_part_of_speech(telegram_id: int) -> None:
+def update_user_statistics(telegram_id: int, **kwargs) -> None:
     """
-    Change words_part_of_speech user setting.
+    Update user statistics.
 
     :param telegram_id: User telegram id
+    :param kwargs: Fields and his values to update
     """
 
-    settings = get_user_settings(telegram_id)
-    words_part_of_speech = settings.words_part_of_speech
-    pos_english = list(constants.PARTS_OF_SPEECH_TRANSLATIONS.values())
-    try:
-        words_part_of_speech = pos_english[pos_english.index(words_part_of_speech)+1]
-    except IndexError:
-        words_part_of_speech = pos_english[0]
     _update_user_related_model_object(
-        UserSettings,
+        UserStatistics,
         telegram_id=telegram_id,
-        words_part_of_speech=words_part_of_speech
+        **kwargs
     )
 
 
-def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> None:
-    """
-    Update the total_correct or total_incorrect field in the user's statistics.
-
-    :param telegram_id: User telegram id
-    :param is_correct: Flag to indicate the field to be updated
-    """
-
-    statistics = _get_user_related_model_object(UserStatistics, telegram_id)
-    kwargs = {"telegram_id": telegram_id, "total_quizzes": statistics.total_quizzes+1}
-    attr = "total_correct" if is_correct else "total_incorrect"
-    kwargs[attr] = getattr(statistics, attr) + 1
-    _update_user_related_model_object(UserStatistics, **kwargs)
+def get_quiz_answers_count_range() -> range:
+    return UserSettings.QUIZ_ANSWERS_COUNT_RANGE
 
 
 ###############################
