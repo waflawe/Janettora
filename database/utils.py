@@ -14,7 +14,11 @@ project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
 config = import_module("config")
-constants = import_module("constants", "bot")
+
+if "bot/" in sys.argv[0]:
+    constants = import_module("constants", "bot")
+elif "parser/" in sys.argv[0]:
+    constants = import_module("bot.constants")
 
 ########################################
 # PRIVATE UTILITIES FOR CODE REDUCTION #
