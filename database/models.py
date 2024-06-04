@@ -3,6 +3,7 @@ from enum import StrEnum
 
 from sqlalchemy import BigInteger, Column, Enum, MetaData
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import PickleType
 
 from database import Model
 
@@ -40,6 +41,8 @@ class UserStatistics(Model):
     total_quizzes: Mapped[int] = mapped_column(default=0)
     total_correct: Mapped[int] = mapped_column(default=0)
     total_incorrect: Mapped[int] = mapped_column(default=0)
+
+    most_used_wpos_and_qac = Column(PickleType, nullable=True)
 
 
 class UserSettings(Model):

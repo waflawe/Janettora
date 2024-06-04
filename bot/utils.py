@@ -24,6 +24,7 @@ def debug_only(record):
 
 
 logger.add(".logs/bot-debug.log", level="DEBUG", catch=True, filter=debug_only)
+redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_NUMBER)
 
 
 async def send_updated_settings_keyboard_by_callback(callback: CallbackQuery) -> None:
@@ -53,6 +54,52 @@ async def get_cor_to_incor(statistics: models.UserStatistics) -> float | int:
         return statistics.total_correct
 
 
+def most_used_statistics_to_answer(*brackets: typing.Dict[str, str]) -> str:
+    """
+    Gets most used statistics in read-ready view.
+
+    :param brackets: Statistical data pairs
+    :return: Read-ready statistical data
+    """
+
+    answer = ""
+    for bracket in brackets:
+        answer += "---------------------\n"
+        for k, v in bracket.items():
+            answer += k + " - " + v + "\n"
+    answer += "---------------------"
+    return answer
+
+
+async def get_most_used_statistics_brackets(telegram_id: int) \
+        -> typing.Tuple[typing.Dict[str, str], typing.Dict[str, str]]:
+    """
+    Get read-ready detailed most used statistics about user.
+
+    :param telegram_id: User telegram id
+    :return: Tuple of Dictionaries with statistical data pairs
+    """
+
+    statistics = utils.get_user_statistics(telegram_id)
+    logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
+    mu = statistics.most_used_wpos_and_qac
+    wpos, qac = dict(), dict()
+    rus, eng = list(
+        constants.PARTS_OF_SPEECH_TRANSLATIONS.keys()
+    ), list(
+        constants.PARTS_OF_SPEECH_TRANSLATIONS.values()
+    )
+    logger.debug(f"Starts get most used statistics for: {telegram_id}")
+    for setting, statistics_setting in mu.items():
+        percents = round((statistics_setting * 100) / statistics.total_quizzes, 2)
+        logger.debug(f"Setting: {setting} has: {percents}% of usage.")
+        if isinstance(setting, int):
+            qac[f"{setting} вариантов ответа"] = f"{statistics_setting} раз, {percents}%"
+        elif isinstance(setting, str) or setting is None:
+            wpos[f"{rus[eng.index(setting)]}"] = f"{statistics_setting} раз, {percents}%"
+    return wpos, qac
+
+
 async def get_random_quiz(telegram_id: int) -> typing.Tuple[str, typing.List, int, int]:
     """
     Create a random quiz for the user according to their settings.
@@ -80,35 +127,63 @@ async def get_random_quiz(telegram_id: int) -> typing.Tuple[str, typing.List, in
     return english, options, correct_option_id, open_period
 
 
+def update_most_used_wpos_and_qac_statistics(telegram_id: int) -> None:
+    """
+    Updates the statistics associated with the setting in use.
+
+    :param telegram_id: User telegram id
+    """
+
+    statistics = utils.get_user_statistics(telegram_id)
+    logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
+    settings = utils.get_user_settings(telegram_id)
+    logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
+    mustat = statistics.most_used_wpos_and_qac
+    wpos, qac = settings.words_part_of_speech, settings.quiz_answers_count
+    logger.debug(f"Most used statistics: {telegram_id} user BEFORE update: {mustat}.")
+    for setting in (wpos, qac):
+        if mustat and setting in mustat:
+            mustat[setting] += 1
+        else:
+            mustat = mustat if mustat else dict()
+            mustat[setting] = 1
+    logger.debug(f"Most used statistics: {telegram_id} user AFTER update: {mustat}.")
+    utils.update_user_statistics(
+        telegram_id=telegram_id,
+        most_used_wpos_and_qac=mustat
+    )
+    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
+
+
 async def quiz_answer_check(
         telegram_id: int,
         poll_id: int,
-        is_correct: typing.Optional[bool] = None,
-        redis: typing.Optional[Redis] = None,
         answer_id: typing.Optional[int] = None
-) -> None:
+) -> bool:
     """
     Checking the answer to the quiz.
 
     :param telegram_id: User telegram id
     :param poll_id: Quiz id
-    :param is_correct: Optional. Parameter for prematurely determining the correctness of a response
-    :param redis: Optional. redis.asyncio.client.Redis object to determine if the response
-    is correct inside the function.
     :param answer_id: Optional. Identifier of the response received from the user
+    :return: Flag is user statistics updated
     """
 
-    if is_correct is None:
-        correct_option_id = await redis.get(f"{poll_id}")
-        correct_option_id = int(correct_option_id.decode("utf-8"))
-        logger.debug(f"Success get correct option id from redis: {correct_option_id} for: {poll_id} poll.")
-        is_correct = correct_option_id == answer_id
+    correct_option_id = await redis.get(f"{poll_id}")
+    if not correct_option_id:
+        return False
+    await redis.delete(f"{poll_id}")
+    correct_option_id = int(correct_option_id.decode("utf-8"))
+    logger.debug(f"Success get correct option id from redis: {correct_option_id} for: {poll_id} poll.")
+    is_correct = correct_option_id == answer_id
     logger.debug(f"Quiz: {poll_id} completed: {telegram_id} as: {is_correct}.")
     update_correct_or_incorrect_answers(
         telegram_id,
         is_correct
     )
     logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
+    update_most_used_wpos_and_qac_statistics(telegram_id)
+    return True
 
 
 async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
@@ -120,13 +195,9 @@ async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
     """
 
     await asyncio.sleep(poll.open_period)
-    is_correct = True
-    if poll.total_voter_count == 0:
-        is_correct = False
-        logger.debug(f"Poll: {poll.id} passed NOT in-time.")
-        await quiz_answer_check(telegram_id, int(poll.id), is_correct)
-    if is_correct:
-        logger.debug(f"Poll: {poll.id} passed in-time.")
+    logger.debug(f"Checks quiz: {poll.id} completion...")
+    flag = await quiz_answer_check(telegram_id, int(poll.id), -1)
+    logger.debug(f"Quiz: {poll.id} passed " + ("NOT " if flag else "") + "IN-time!")
 
 
 def change_quiz_answers_count(telegram_id: int) -> None:

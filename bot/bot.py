@@ -16,7 +16,6 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.types import CallbackQuery, Message, PollAnswer
 from loguru import logger
-from redis.asyncio.client import Redis
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
@@ -30,8 +29,6 @@ logger.add(".logs/bot-debug.log", level="DEBUG", catch=True, filter=bot_utils.de
 
 bot = Bot(config.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
-
-redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_NUMBER)
 
 
 @dp.message(CommandStart())
@@ -64,7 +61,7 @@ async def start_training_handler(message: Message) -> None:
         f"Send quiz: {message.poll.id}. Word: {english}, translation: {options[correct_option_id]}, "
         f"quiz open period: {open_period}."
     )
-    await redis.set(f"{message.poll.id}", correct_option_id, open_period)
+    await bot_utils.redis.set(f"{message.poll.id}", correct_option_id, open_period+3)
     logger.debug(f"Set correct option id in redis for: {message.poll.id} poll.")
     await bot_utils.check_quiz_completion(telegram_id, message.poll)
 
@@ -96,14 +93,21 @@ async def statistics_handler(message: Message) -> None:
     logger.debug(f"Success get STATISTICS for: {message.from_user.id} user.")
     cor_to_incor = await bot_utils.get_cor_to_incor(statistics)
     logger.debug(f"Success get cor/incor STATISTICS for: {message.from_user.id} user.")
-    await message.answer(
-        f"Вот ваша статистика за все время использования бота:\n"
+    muwpos, muqac = await bot_utils.get_most_used_statistics_brackets(message.from_user.id)
+    logger.debug(f"Success get most used statistics for: {message.from_user.id} user.")
+    answer = (
+        f"[+] Вот ваша статистика за все время использования бота:\n"
         f"\n"
         f"Всего пройдено викторин: {statistics.total_quizzes}\n"
         f"Правильных ответов: {statistics.total_correct}\n"
         f"Неправильных ответов: {statistics.total_incorrect}\n"
-        f"Отношение правильных ответов к неправильным: {cor_to_incor}"
+        f"Отношение правильных ответов к неправильным: {cor_to_incor}\n"
+        f"\n"
+        f"[+] Частота использования настроек:\n"
+        f"\n"
     )
+    answer += bot_utils.most_used_statistics_to_answer(muqac, muwpos)
+    await message.answer(answer)
 
 
 @dp.poll_answer()
@@ -111,7 +115,6 @@ async def quiz_answer_handler(poll_answer: PollAnswer) -> None:
     await bot_utils.quiz_answer_check(
         poll_answer.user.id,
         poll_answer.poll_id,
-        redis=redis,
         answer_id=poll_answer.option_ids[0]
     )
 
