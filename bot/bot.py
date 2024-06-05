@@ -94,14 +94,14 @@ async def statistics_handler(message: Message) -> None:
     muwpos, muqac = await bot_utils.get_most_used_statistics_brackets(message.from_user.id)
     logger.debug(f"Success get most used statistics for: {message.from_user.id} user.")
     answer = (
-        f"[+] Вот ваша статистика за все время использования бота:\n"
+        f"🪪 Вот ваша статистика за все время использования бота:\n"
         f"\n"
-        f"Всего пройдено викторин: {statistics.total_quizzes}\n"
-        f"Правильных ответов: {statistics.total_correct}\n"
-        f"Неправильных ответов: {statistics.total_incorrect}\n"
-        f"Отношение правильных ответов к неправильным: {cor_to_incor}\n"
+        f"♾️ Всего пройдено викторин: {statistics.total_quizzes}\n"
+        f"✔️ Правильных ответов: {statistics.total_correct}\n"
+        f"❌ Неправильных ответов: {statistics.total_incorrect}\n"
+        f"➗ Отношение правильных ответов к неправильным: {cor_to_incor}\n"
         f"\n"
-        f"[+] Частота использования настроек:\n"
+        f"📊 Частота использования настроек:\n"
         f"\n"
     )
     answer += bot_utils.most_used_statistics_to_answer(muqac, muwpos)
