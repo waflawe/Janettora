@@ -14,7 +14,7 @@ sys.path.append(str(project_dir))
 
 config = import_module("config")
 keyboards = import_module("keyboards", "bot")
-utils = import_module("database.utils")
+api = import_module("database.api")
 models = import_module("database.models")
 constants = import_module("constants", "bot")
 
@@ -34,7 +34,7 @@ async def send_updated_settings_keyboard_by_callback(callback: CallbackQuery) ->
     :param callback: Callback of setting changes
     """
 
-    settings = utils.get_user_settings(callback.from_user.id)
+    settings = api.get_user_settings(callback.from_user.id)
     logger.debug(f"Success get SETTINGS for: {callback.from_user.id} user.")
     await callback.message.edit_reply_markup(reply_markup=keyboards.settings_kb(settings))
     await callback.answer()
@@ -80,7 +80,7 @@ async def get_most_used_statistics_brackets(telegram_id: int) \
     :return: Tuple of Dictionaries with statistical data pairs
     """
 
-    statistics = utils.get_user_statistics(telegram_id)
+    statistics = api.get_user_statistics(telegram_id)
     logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
     mu = statistics.most_used_wpos_and_qac
     wpos, qac = dict(), dict()
@@ -109,13 +109,13 @@ async def get_random_quiz(telegram_id: int) -> typing.Tuple[str, typing.List, in
     List of answer choices, index of correct answer, quiz validity time.
     """
 
-    settings = utils.get_user_settings(telegram_id)
+    settings = api.get_user_settings(telegram_id)
     logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
-    english, russian = utils.get_random_word(settings.words_part_of_speech)
+    english, russian = api.get_random_word(settings.words_part_of_speech)
     logger.debug(f"Success get random word: {english}, translation: {russian}.")
     options = [russian]
     options.extend(
-        [utils.get_random_word(settings.words_part_of_speech)[1] for _ in range(settings.quiz_answers_count - 1)]
+        [api.get_random_word(settings.words_part_of_speech)[1] for _ in range(settings.quiz_answers_count - 1)]
     )
     logger.debug(f"Success extend answers list: {options}.")
     random.shuffle(options)
@@ -134,9 +134,9 @@ def update_most_used_wpos_and_qac_statistics(telegram_id: int) -> None:
     :param telegram_id: User telegram id
     """
 
-    statistics = utils.get_user_statistics(telegram_id)
+    statistics = api.get_user_statistics(telegram_id)
     logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
-    settings = utils.get_user_settings(telegram_id)
+    settings = api.get_user_settings(telegram_id)
     logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
     mustat = statistics.most_used_wpos_and_qac
     wpos, qac = settings.words_part_of_speech, settings.quiz_answers_count
@@ -148,7 +148,7 @@ def update_most_used_wpos_and_qac_statistics(telegram_id: int) -> None:
             mustat = mustat if mustat else dict()
             mustat[setting] = 1
     logger.debug(f"Most used statistics: {telegram_id} user AFTER update: {mustat}.")
-    utils.update_user_statistics(
+    api.update_user_statistics(
         telegram_id=telegram_id,
         most_used_wpos_and_qac=mustat
     )
@@ -207,16 +207,16 @@ def change_quiz_answers_count(telegram_id: int) -> None:
     :param telegram_id: User telegram id
     """
 
-    settings = utils.get_user_settings(telegram_id)
+    settings = api.get_user_settings(telegram_id)
     logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
     quiz_answers_count = settings.quiz_answers_count
     logger.debug(f"Quiz answers count BEFORE update: {quiz_answers_count}.")
-    if quiz_answers_count+1 in utils.get_quiz_answers_count_range():
+    if quiz_answers_count+1 in api.get_quiz_answers_count_range():
         quiz_answers_count += 1
     else:
-        quiz_answers_count = utils.get_quiz_answers_count_range().start
+        quiz_answers_count = api.get_quiz_answers_count_range().start
     logger.debug(f"Quiz answers count AFTER update: {quiz_answers_count}.")
-    utils.update_user_settings(
+    api.update_user_settings(
         telegram_id=telegram_id,
         quiz_answers_count=quiz_answers_count
     )
@@ -230,7 +230,7 @@ def change_words_part_of_speech(telegram_id: int) -> None:
     :param telegram_id: User telegram id
     """
 
-    settings = utils.get_user_settings(telegram_id)
+    settings = api.get_user_settings(telegram_id)
     logger.debug(f"Success get SETTINGS for: {telegram_id} user.")
     words_part_of_speech = settings.words_part_of_speech
     logger.debug(f"Words part of speech BEFORE update: {words_part_of_speech}.")
@@ -240,7 +240,7 @@ def change_words_part_of_speech(telegram_id: int) -> None:
     except IndexError:
         words_part_of_speech = pos_english[0]
     logger.debug(f"Words part of speech AFTER update: {words_part_of_speech}.")
-    utils.update_user_settings(
+    api.update_user_settings(
         telegram_id=telegram_id,
         words_part_of_speech=words_part_of_speech
     )
@@ -255,10 +255,10 @@ def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> N
     :param is_correct: Flag to indicate the field to be updated
     """
 
-    statistics = utils.get_user_statistics(telegram_id)
+    statistics = api.get_user_statistics(telegram_id)
     logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
     kwargs = {"telegram_id": telegram_id, "total_quizzes": statistics.total_quizzes+1}
     attr = "total_correct" if is_correct else "total_incorrect"
     kwargs[attr] = getattr(statistics, attr) + 1
-    utils.update_user_statistics(**kwargs)
+    api.update_user_statistics(**kwargs)
     logger.debug(f"Success update STATISTICS for: {telegram_id} user.")

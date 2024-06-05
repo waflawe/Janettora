@@ -11,7 +11,7 @@ from loguru import logger
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
-utils = import_module("database.utils")
+api = import_module("database.api")
 models = import_module("database.models")
 
 logger.add(".logs/parser.log", level="INFO")
@@ -121,7 +121,7 @@ class WorderdictParser(object):
                 await self.get_and_validate_part_of_speech(card)
             )
             if all(word_attributes):
-                utils.create_word(*word_attributes)
+                api.create_word(*word_attributes)
                 self.counter += 1
 
         if self.pages_counter % 100 == 0:
@@ -166,7 +166,7 @@ class WorderdictParser(object):
 
 
 def main() -> None:
-    utils.destroy_word_model(), utils.create_word_model()
+    api.destroy_word_model(), api.create_word_model()
 
     WorderdictParser.configure(DEFAULT_WORDERDICT_PARSE_URL)
     p = WorderdictParser()

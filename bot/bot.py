@@ -22,7 +22,7 @@ sys.path.append(str(project_dir))
 
 config = import_module("config")
 keyboards = import_module("keyboards", "bot")
-utils = import_module("database.utils")
+api = import_module("database.api")
 bot_utils = import_module("utils", "bot")
 
 logger.add(".logs/bot-debug.log", level="DEBUG", catch=True, filter=bot_utils.debug_only)
@@ -33,7 +33,7 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start_handler(message: Message) -> None:
-    is_registered = utils.register_user_in_databases(message.from_user.id)
+    is_registered = api.register_user_in_databases(message.from_user.id)
     if is_registered:
         logger.debug(f"User: {message.from_user.id} success registered.")
     await message.answer(f"Добрый день, @{message.from_user.username}!\n"
@@ -68,7 +68,7 @@ async def start_training_handler(message: Message) -> None:
 
 @dp.message(F.text == "Настройки")
 async def settings_handler(message: Message) -> None:
-    settings = utils.get_user_settings(message.from_user.id)
+    settings = api.get_user_settings(message.from_user.id)
     logger.debug(f"Success get SETTINGS for: {message.from_user.id} user.")
     await message.answer("Настройки вашего пользователя:", reply_markup=keyboards.settings_kb(settings))
 
@@ -89,7 +89,7 @@ async def change_wpos_handler(callback: CallbackQuery) -> None:
 
 @dp.message(F.text == "Статистика")
 async def statistics_handler(message: Message) -> None:
-    statistics = utils.get_user_statistics(message.from_user.id)
+    statistics = api.get_user_statistics(message.from_user.id)
     logger.debug(f"Success get STATISTICS for: {message.from_user.id} user.")
     cor_to_incor = await bot_utils.get_cor_to_incor(statistics)
     logger.debug(f"Success get cor/incor STATISTICS for: {message.from_user.id} user.")
@@ -126,7 +126,7 @@ async def echo(message: Message) -> None:
 
 
 async def main() -> None:
-    utils.recreate_settings_and_statistics_model()
+    api.recreate_settings_and_statistics_model()
     await bot.delete_webhook(drop_pending_updates=True)
     logger.debug(
         f"Janettora starts with next parameters: DEBUG={bool(config.DEBUG)} REDIS_HOST={config.REDIS_HOST} "
