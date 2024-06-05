@@ -68,30 +68,28 @@ async def start_training_handler(message: Message) -> None:
 
 @dp.message(F.text == "Настройки")
 async def settings_handler(message: Message) -> None:
-    settings = api.get_user_settings(message.from_user.id)
-    logger.debug(f"Success get SETTINGS for: {message.from_user.id} user.")
+    settings = await bot_utils.get_user_settings(message.from_user.id)
     await message.answer("Настройки вашего пользователя:", reply_markup=keyboards.settings_kb(settings))
 
 
 @dp.callback_query(F.data == "change_qac")
 async def change_qac_handler(callback: CallbackQuery) -> None:
-    bot_utils.change_quiz_answers_count(callback.from_user.id)
+    await bot_utils.change_quiz_answers_count(callback.from_user.id)
     logger.debug(f"Success change quiz answers count for: {callback.from_user.id} user.")
     await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
 @dp.callback_query(F.data == "change_wpos")
 async def change_wpos_handler(callback: CallbackQuery) -> None:
-    bot_utils.change_words_part_of_speech(callback.from_user.id)
+    await bot_utils.change_words_part_of_speech(callback.from_user.id)
     logger.debug(f"Success change words part of speech setting for: {callback.from_user.id} user.")
     await bot_utils.send_updated_settings_keyboard_by_callback(callback)
 
 
 @dp.message(F.text == "Статистика")
 async def statistics_handler(message: Message) -> None:
-    statistics = api.get_user_statistics(message.from_user.id)
-    logger.debug(f"Success get STATISTICS for: {message.from_user.id} user.")
-    cor_to_incor = await bot_utils.get_cor_to_incor(statistics)
+    statistics = await bot_utils.get_user_statistics(message.from_user.id)
+    cor_to_incor = bot_utils.get_cor_to_incor(statistics)
     logger.debug(f"Success get cor/incor STATISTICS for: {message.from_user.id} user.")
     muwpos, muqac = await bot_utils.get_most_used_statistics_brackets(message.from_user.id)
     logger.debug(f"Success get most used statistics for: {message.from_user.id} user.")
