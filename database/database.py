@@ -23,14 +23,7 @@ engine = create_engine(
     pool_size=1
 )
 
-enginelite = create_engine(
-    "sqlite:///words_example.db",
-    echo=config.DEBUG,
-    pool_size=1
-)
-
 session_factory = sessionmaker(engine)
-session_factorylite = sessionmaker(enginelite)
 
 
 class Model(DeclarativeBase):
