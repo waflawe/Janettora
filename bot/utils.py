@@ -1,4 +1,5 @@
 import asyncio
+import pickle
 import random
 import sys
 import typing
@@ -8,7 +9,6 @@ from pathlib import Path
 from aiogram.types import CallbackQuery, Poll
 from loguru import logger
 from redis.asyncio.client import Redis
-import pickle
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))

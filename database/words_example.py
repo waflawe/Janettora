@@ -1,6 +1,6 @@
 import sys
-from pathlib import Path
 from importlib import import_module
+from pathlib import Path
 
 from sqlalchemy import select
 
