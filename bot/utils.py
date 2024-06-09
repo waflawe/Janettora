@@ -211,16 +211,18 @@ def most_used_statistics_to_answer(*brackets: typing.Dict[str, str]) -> str:
 
 
 async def get_most_used_statistics_brackets(telegram_id: int) \
-        -> typing.Tuple[typing.Dict[str, str], typing.Dict[str, str]]:
+        -> typing.Tuple[typing.Dict[str, str], typing.Dict[str, str]] | None:
     """
     Get read-ready detailed most used statistics about user.
 
     :param telegram_id: User telegram id
-    :return: Tuple of Dictionaries with statistical data pairs
+    :return: Tuple of Dictionaries with statistical data pairs or None if user doesn't pass any quiz
     """
 
     statistics = await get_user_statistics(telegram_id)
     mu = statistics.most_used_wpos_and_qac
+    if not mu:
+        return None
     wpos, qac = dict(), dict()
     rus, eng = list(
         constants.PARTS_OF_SPEECH_TRANSLATIONS.keys()

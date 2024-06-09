@@ -91,8 +91,6 @@ async def statistics_handler(message: Message) -> None:
     statistics = await bot_utils.get_user_statistics(message.from_user.id)
     cor_to_incor = bot_utils.get_cor_to_incor(statistics)
     logger.debug(f"Success get cor/incor STATISTICS for: {message.from_user.id} user.")
-    muwpos, muqac = await bot_utils.get_most_used_statistics_brackets(message.from_user.id)
-    logger.debug(f"Success get most used statistics for: {message.from_user.id} user.")
     answer = (
         f"🪪 Вот ваша статистика за все время использования бота:\n"
         f"\n"
@@ -104,7 +102,14 @@ async def statistics_handler(message: Message) -> None:
         f"📊 Частота использования настроек:\n"
         f"\n"
     )
-    answer += bot_utils.most_used_statistics_to_answer(muqac, muwpos)
+    mus = await bot_utils.get_most_used_statistics_brackets(message.from_user.id)
+    if mus:
+        muwpos, muqac = mus
+        logger.debug(f"Success get most used STATISTICS for: {message.from_user.id} user.")
+        answer += bot_utils.most_used_statistics_to_answer(muqac, muwpos)
+    else:
+        logger.debug(f"Most used STATISTICS for: {message.from_user.id} user is empty.")
+        answer += "Информация отсутствует :/"
     await message.answer(answer)
 
 

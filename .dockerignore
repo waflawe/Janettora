@@ -1,0 +1,6 @@
+venv/
+journal.py
+test.py
+.env
+ruff.toml
+.logs/

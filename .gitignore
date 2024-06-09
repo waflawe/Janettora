@@ -5,3 +5,4 @@ venv/
 .idea/
 .logs/
 test.py
+.env.docker
