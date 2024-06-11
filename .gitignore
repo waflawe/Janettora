@@ -6,3 +6,6 @@ venv/
 .logs/
 test.py
 .env.docker
+
+README-en.md
+.githubscreenshots

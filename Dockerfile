@@ -11,4 +11,4 @@ ADD .env.docker /Janettora/.env
 
 RUN mkdir .logs/
 
-CMD sleep 10; python database/utils/migrate_words_to_docker.py; python bot/bot.py
+CMD sleep 10; python database/cli/migrate_words.py; python bot/bot.py
