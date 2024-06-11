@@ -32,6 +32,7 @@ __[Documentation in English](https://github.com/waflawe/Janettora/blob/main/READ
 ### Установка
 ```commandline  
 git clone https://github.com/waflawe/Janettora.git  
+cd Janettora/
 ```  
 После успешной установки вам нужно определиться с используемой базой данных слов. Она указывается программе 
 по-разному в зависимости от режима запуска.

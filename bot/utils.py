@@ -46,7 +46,7 @@ async def get_user_settings(telegram_id: int) -> api.UserSettings:
         settings = pickle.dumps(settings)
         await redis.set(f"{telegram_id}:{config.CACHE_SETTINGS_VARIABLE_NAME}", settings)
     settings = pickle.loads(settings)
-    logger.debug(f"Success get SETTINGS for: {telegram_id} user from cache: {from_cache}.")
+    logger.debug(f"[JANETTORA] Success get SETTINGS for: {telegram_id} user from cache: {from_cache}.")
     return settings
 
 
@@ -59,7 +59,7 @@ async def get_user_statistics(telegram_id: int) -> api.UserStatistics:
     """
 
     statistics = api.get_user_statistics(telegram_id)
-    logger.debug(f"Success get STATISTICS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success get STATISTICS for: {telegram_id} user.")
     return statistics
 
 
@@ -77,18 +77,18 @@ async def change_quiz_answers_count(telegram_id: int) -> None:
 
     settings = await get_user_settings(telegram_id)
     quiz_answers_count = settings.quiz_answers_count
-    logger.debug(f"Quiz answers count BEFORE update: {quiz_answers_count}.")
+    logger.debug(f"[JANETTORA] Quiz answers count BEFORE update: {quiz_answers_count}.")
     if quiz_answers_count+1 in api.get_quiz_answers_count_range():
         quiz_answers_count += 1
     else:
         quiz_answers_count = api.get_quiz_answers_count_range().start
-    logger.debug(f"Quiz answers count AFTER update: {quiz_answers_count}.")
+    logger.debug(f"[JANETTORA] Quiz answers count AFTER update: {quiz_answers_count}.")
     api.update_user_settings(
         telegram_id=telegram_id,
         quiz_answers_count=quiz_answers_count
     )
     await redis.delete(f"{telegram_id}:{config.CACHE_SETTINGS_VARIABLE_NAME}")
-    logger.debug(f"Success update SETTINGS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success update SETTINGS for: {telegram_id} user.")
 
 
 async def change_words_part_of_speech(telegram_id: int) -> None:
@@ -100,19 +100,19 @@ async def change_words_part_of_speech(telegram_id: int) -> None:
 
     settings = await get_user_settings(telegram_id)
     words_part_of_speech = settings.words_part_of_speech
-    logger.debug(f"Words part of speech BEFORE update: {words_part_of_speech}.")
+    logger.debug(f"[JANETTORA] Words part of speech BEFORE update: {words_part_of_speech}.")
     pos_english = list(constants.PARTS_OF_SPEECH_TRANSLATIONS.values())
     try:
         words_part_of_speech = pos_english[pos_english.index(words_part_of_speech)+1]
     except IndexError:
         words_part_of_speech = pos_english[0]
-    logger.debug(f"Words part of speech AFTER update: {words_part_of_speech}.")
+    logger.debug(f"[JANETTORA] Words part of speech AFTER update: {words_part_of_speech}.")
     api.update_user_settings(
         telegram_id=telegram_id,
         words_part_of_speech=words_part_of_speech
     )
     await redis.delete(f"{telegram_id}:{config.CACHE_SETTINGS_VARIABLE_NAME}")
-    logger.debug(f"Success update SETTINGS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success update SETTINGS for: {telegram_id} user.")
 
 
 #######################
@@ -131,19 +131,19 @@ async def update_most_used_wpos_and_qac_statistics(telegram_id: int) -> None:
     settings = await get_user_settings(telegram_id)
     mustat = statistics.most_used_wpos_and_qac
     wpos, qac = settings.words_part_of_speech, settings.quiz_answers_count
-    logger.debug(f"Most used statistics: {telegram_id} user BEFORE update: {mustat}.")
+    logger.debug(f"[JANETTORA] Most used statistics: {telegram_id} user BEFORE update: {mustat}.")
     for setting in (wpos, qac):
         if mustat and setting in mustat:
             mustat[setting] += 1
         else:
             mustat = mustat if mustat else dict()
             mustat[setting] = 1
-    logger.debug(f"Most used statistics: {telegram_id} user AFTER update: {mustat}.")
+    logger.debug(f"[JANETTORA] Most used statistics: {telegram_id} user AFTER update: {mustat}.")
     api.update_user_statistics(
         telegram_id=telegram_id,
         most_used_wpos_and_qac=mustat
     )
-    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success update STATISTICS for: {telegram_id} user.")
 
 
 async def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool) -> None:
@@ -159,7 +159,7 @@ async def update_correct_or_incorrect_answers(telegram_id: int, is_correct: bool
     attr = "total_correct" if is_correct else "total_incorrect"
     kwargs[attr] = getattr(statistics, attr) + 1
     api.update_user_statistics(**kwargs)
-    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success update STATISTICS for: {telegram_id} user.")
 
 
 #########
@@ -229,10 +229,10 @@ async def get_most_used_statistics_brackets(telegram_id: int) \
     ), list(
         constants.PARTS_OF_SPEECH_TRANSLATIONS.values()
     )
-    logger.debug(f"Starts get most used statistics for: {telegram_id}")
+    logger.debug(f"[JANETTORA] Starts get most used statistics for: {telegram_id}")
     for setting, statistics_setting in mu.items():
         percents = round((statistics_setting * 100) / statistics.total_quizzes, 2)
-        logger.debug(f"Setting: {setting} has: {percents}% of usage.")
+        logger.debug(f"[JANETTORA] Setting: {setting} has: {percents}% of usage.")
         if isinstance(setting, int):
             qac[f"{setting} вариантов ответа"] = f"{statistics_setting} раз, {percents}%"
         elif isinstance(setting, str) or setting is None:
@@ -251,17 +251,17 @@ async def get_random_quiz(telegram_id: int) -> typing.Tuple[str, typing.List, in
 
     settings = await get_user_settings(telegram_id)
     english, russian = api.get_random_word(settings.words_part_of_speech)
-    logger.debug(f"Success get random word: {english}, translation: {russian}.")
+    logger.debug(f"[JANETTORA] Success get random word: {english}, translation: {russian}.")
     options = [russian]
     options.extend(
         [api.get_random_word(settings.words_part_of_speech)[1] for _ in range(settings.quiz_answers_count - 1)]
     )
-    logger.debug(f"Success extend answers list: {options}.")
+    logger.debug(f"[JANETTORA] Success extend answers list: {options}.")
     random.shuffle(options)
-    logger.debug(f"Success shuffle options list: {options}.")
+    logger.debug(f"[JANETTORA] Success shuffle options list: {options}.")
     correct_option_id = options.index(russian)
     open_period = constants.QUIZ_ANSWER_TIME_BY_USER_ANSWERS_COUNT[settings.quiz_answers_count]
-    logger.debug(f"Success get open period for quiz: {open_period}.")
+    logger.debug(f"[JANETTORA] Success get open period for quiz: {open_period}.")
 
     return english, options, correct_option_id, open_period
 
@@ -285,14 +285,14 @@ async def quiz_answer_check(
         return False
     await redis.delete(f"{poll_id}")
     correct_option_id = int(correct_option_id.decode("utf-8"))
-    logger.debug(f"Success get correct option id from redis: {correct_option_id} for: {poll_id} poll.")
+    logger.debug(f"[JANETTORA] Success get correct option id from redis: {correct_option_id} for: {poll_id} poll.")
     is_correct = correct_option_id == answer_id
-    logger.debug(f"Quiz: {poll_id} completed: {telegram_id} as: {is_correct}.")
+    logger.debug(f"[JANETTORA] Quiz: {poll_id} completed: {telegram_id} as: {is_correct}.")
     await update_correct_or_incorrect_answers(
         telegram_id,
         is_correct
     )
-    logger.debug(f"Success update STATISTICS for: {telegram_id} user.")
+    logger.debug(f"[JANETTORA] Success update STATISTICS for: {telegram_id} user.")
     await update_most_used_wpos_and_qac_statistics(telegram_id)
     return True
 
@@ -306,6 +306,6 @@ async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
     """
 
     await asyncio.sleep(poll.open_period)
-    logger.debug(f"Checks quiz: {poll.id} completion...")
+    logger.debug(f"[JANETTORA] Checks quiz: {poll.id} completion...")
     flag = await quiz_answer_check(telegram_id, int(poll.id), -1)
-    logger.debug(f"Quiz: {poll.id} passed " + ("NOT " if flag else "") + "IN-time!")
+    logger.debug(f"[JANETTORA] Quiz: {poll.id} passed " + ("NOT " if flag else "") + "IN-time!")

@@ -32,6 +32,7 @@ __[Документация на русском](https://github.com/waflawe/Jane
 ### Installation
 ```command line
 git clone https://github.com/waflawe/Janettora.git
+cd Janettora/
 ```
 After successful installation, you need to decide on the word database to use. It is indicated to the program
 differently depending on the running mode.
