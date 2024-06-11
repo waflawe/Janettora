@@ -1,4 +1,3 @@
-<!-- TOC --><a name="janettora"></a>
 # Janettora  
 Простой телеграм бот для тренировки словарного запаса английского языка, написанный на фреймворке 
 __[Aiogram](https://github.com/aiogram/aiogram)__. Проект использует реляционную СУБД __[PostgreSQL](https://github.com/postgres/postgres)__ в качестве основной базы данных, 
@@ -113,54 +112,54 @@ docker-compose up
 ## Описание настроек
 <!-- TOC --><a name="runtime-settings"></a>
 ### Runtime-настройки
-__TELEGRAM_BOT_TOKEN__  
+- __TELEGRAM_BOT_TOKEN__  
 Обязательная для изменения настройка с телеграм токеном бота. Как его получить описано [здесь](https://tproger.ru/articles/telegram-bot-create-and-deploy#part1).  
 
-__DEBUG__  
+- __DEBUG__  
 Необязательная для изменения настройка, сигнализирующая важность ведения DEBUG логов (которые, кстати, ведутся в папке `.logs/`). `1` - `True`, `0` - `False`.
 
 ### Основная PostgreSQL база данных
-__DB_NAME__  
+- __DB_NAME__  
 Не требующая изменения настройка, обозначающая имя основной `PostgreSQL` базы данных для бота.  
 
-__DB_USER__  
+- __DB_USER__  
 Имя пользователя базы.  
 
-__DB_PASSWORD__  
+- __DB_PASSWORD__  
 Пароль пользователя базы.  
 
-__DB_HOST__  
+- __DB_HOST__  
 IP Адрес базы.  
 
-__DB_PORT__  
+- __DB_PORT__  
 Порт на `DB_HOST` с базой.
 ### Основная Redis база данных
-__REDIS_HOST__  
+- __REDIS_HOST__  
 IP Адрес базы.  
 
-__REDIS_PORT__  
+- __REDIS_PORT__  
 Порт на `REDIS_HOST` с базой.  
 
-__REDIS_DB_NUMBER__  
+- __REDIS_DB_NUMBER__  
 Номер базы. `0`+  
 ### Исходная PostgreSQL база данных для Docker
 Настройки для CLI утилиты `database/cli/collect_words.py`. Чаще всего совпадают соответственно с настройками раздела [Основная PostgreSQL база данных](), но не всегда.  
-__COLLECT_WORDS_DB_NAME__  
+- __COLLECT_WORDS_DB_NAME__  
 Имя базы.  
 
-__COLLECT_WORDS_DB_USER__  
+- __COLLECT_WORDS_DB_USER__  
 Имя пользователя базы.  
 
-__COLLECT_WORDS_DB_PASSWORD__  
+- __COLLECT_WORDS_DB_PASSWORD__  
 Пароль пользователя базы.  
 
-__COLLECT_WORDS_DB_HOST__  
+- __COLLECT_WORDS_DB_HOST__  
 IP Адрес базы.  
 
-__COLLECT_WORDS_DB_PORT__  
+- __COLLECT_WORDS_DB_PORT__  
 Порт на `DB_HOST` с базой.  
 ### Исходная SQLite база данных для Docker
-__SQLITE_WORDS_DB_TO_DOCKER_NAME__  
+- __SQLITE_WORDS_DB_TO_DOCKER_NAME__  
 Имя `SQLite` базы данных в папке проекта с табличкой слов для Docker контейнера. По умолчанию используется база `test_words.db`, предоставляемая самим проектом. 
 ## Лицензия <a name="license"></a>
 Этот проект лицензирован [MIT лицензией](https://github.com/waflawe/Janettora/blob/main/LICENSE).
