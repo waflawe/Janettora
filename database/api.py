@@ -13,7 +13,7 @@ from database.models import Model, UserSettings, UserStatistics, Word, WordParts
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
-config = import_module("config")
+config = import_module("config").config
 
 if "bot/" in sys.argv[0]:
     constants = import_module("constants", "bot")

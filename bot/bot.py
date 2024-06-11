@@ -20,7 +20,7 @@ from loguru import logger
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
-config = import_module("config")
+config = import_module("config").config
 keyboards = import_module("keyboards", "bot")
 api = import_module("database.api")
 bot_utils = import_module("utils", "bot")

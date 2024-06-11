@@ -13,7 +13,7 @@ from redis.asyncio.client import Redis
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
 
-config = import_module("config")
+config = import_module("config").config
 keyboards = import_module("keyboards", "bot")
 api = import_module("database.api")
 models = import_module("database.models")
