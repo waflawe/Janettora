@@ -14,13 +14,14 @@ sys.path.append(str(project_dir))
 database = import_module("database", "database")
 models = import_module("models", "database")
 config = import_module("config").config
+exceptions = import_module("exceptions")
 
 
-def get_engine() -> Engine | None:
+def get_engine() -> Engine:
     """
     Get engine to collect words from config.
 
-    :return: sqlalchemy.engine.Engine object or None if database engine configured incorrect in the config
+    :return: sqlalchemy.engine.Engine object or raise exception if database engine configured incorrect in the config
     """
 
     if config.COLLECT_WORDS_DB_NAME:
@@ -36,8 +37,7 @@ def get_engine() -> Engine | None:
             echo=config.DEBUG,
             pool_size=10
         )
-    logger.info("Config variable config.COLLECT_WORDS_DB_NAME configured incorrectly.")
-    return None
+    raise exceptions.JanettoraConfigError("Collect words database configured incorrectly.", False)
 
 
 def collect_words(session_maker: sessionmaker, session_maker_to_collect: sessionmaker) -> None:

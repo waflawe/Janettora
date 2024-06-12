@@ -41,4 +41,4 @@ if __name__ == "__main__":
     try:
         collect_words.collect_words(session_factory_words, database.session_factory)
     except OperationalError:
-        raise exceptions.JanettoraConfigError("Setting SQLITE_WORDS_DB_TO_DOCKER_NAME configured incorrectly.")
+        raise exceptions.JanettoraConfigError("SQLITE_WORDS_DB_TO_DOCKER_NAME")

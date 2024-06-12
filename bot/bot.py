@@ -15,6 +15,8 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.types import CallbackQuery, Message, PollAnswer
+from aiogram.utils.token import TokenValidationError
+from sqlalchemy.exc import OperationalError
 from loguru import logger
 
 project_dir = Path(__file__).resolve().parent.parent
@@ -24,10 +26,14 @@ config = import_module("config").config
 keyboards = import_module("keyboards", "bot")
 api = import_module("database.api")
 bot_utils = import_module("utils", "bot")
+exceptions = import_module("exceptions")
 
 logger.add(".logs/bot-debug.log", level="DEBUG", catch=True, filter=bot_utils.debug_only)
 
-bot = Bot(config.TELEGRAM_BOT_TOKEN)
+try:
+    bot = Bot(config.TELEGRAM_BOT_TOKEN)
+except TokenValidationError:
+    raise exceptions.JanettoraConfigError("TELEGRAM_BOT_TOKEN")
 dp = Dispatcher()
 
 
@@ -129,7 +135,10 @@ async def echo(message: Message) -> None:
 
 
 async def main() -> None:
-    api.recreate_settings_and_statistics_model()
+    try:
+        api.recreate_settings_and_statistics_model()
+    except OperationalError:
+        raise exceptions.JanettoraConfigError("Main bot database configured incorrectly.", False)
     await bot.delete_webhook(drop_pending_updates=True)
     logger.debug(
         f"[JANETTORA] Janettora starts with next parameters: DEBUG={bool(config.DEBUG)} REDIS_HOST={config.REDIS_HOST} "
