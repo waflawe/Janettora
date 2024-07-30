@@ -4,7 +4,7 @@ from importlib import import_module
 from pathlib import Path
 
 from loguru import logger
-from sqlalchemy import URL, create_engine, select
+from sqlalchemy import create_engine, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 

@@ -16,8 +16,8 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.types import CallbackQuery, Message, PollAnswer
 from aiogram.utils.token import TokenValidationError
-from sqlalchemy.exc import OperationalError
 from loguru import logger
+from sqlalchemy.exc import OperationalError
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))

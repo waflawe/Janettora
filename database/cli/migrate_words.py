@@ -4,8 +4,8 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker
 
 project_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_dir))
