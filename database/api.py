@@ -6,6 +6,7 @@ from pathlib import Path
 
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from database import engine, session_factory
 from database.models import Model, UserSettings, UserStatistics, Word, WordPartsOfSpeech
@@ -50,9 +51,9 @@ def _get_user_related_model_object(model: typing.Type[Model], telegram_id: int) 
     :return: Selected object
     """
 
-    query = select(model).where(model.telegram_id == telegram_id)
+    query = select(model).where(model.telegram_id == telegram_id)   # noqa
     with session_factory() as session:
-        result = session.execute(query).all()[0][0]
+        result = session.execute(query).scalars().all()[0]
         return result
 
 
@@ -114,12 +115,13 @@ def get_random_word(part_of_speech: typing.Optional[str] = None) -> typing.Tuple
     :return: Tuple from the English and Russian translations of the word
     """
 
-    words = select(Word)
+    w = aliased(Word)
+    words = select(w)
     if part_of_speech:
-        words = words.where(Word.part_of_speech == part_of_speech)
+        words = words.where(w.part_of_speech == part_of_speech)
     with session_factory() as session:
-        result = session.execute(words).all()
-        random_word = random.choice(result)[0]
+        result = session.execute(words).scalars().all()
+        random_word = random.choice(result)
         return random_word.english, random_word.russian
 
 
@@ -131,7 +133,7 @@ def get_user_settings(telegram_id: int) -> UserSettings:
     :return: UserSettings object with user settings
     """
 
-    return _get_user_related_model_object(UserSettings, telegram_id)
+    return _get_user_related_model_object(UserSettings, telegram_id)   # noqa
 
 
 def get_user_statistics(telegram_id: int) -> UserStatistics:
@@ -142,7 +144,7 @@ def get_user_statistics(telegram_id: int) -> UserStatistics:
     :return: UserStatistics object with user statistics
     """
 
-    return _get_user_related_model_object(UserStatistics, telegram_id)
+    return _get_user_related_model_object(UserStatistics, telegram_id)   # noqa
 
 
 def update_user_settings(telegram_id: int, **kwargs) -> None:

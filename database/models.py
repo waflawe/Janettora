@@ -7,6 +7,9 @@ from sqlalchemy.types import PickleType
 
 from database import Model
 
+intpk = typing.Annotated[int, mapped_column(primary_key=True)]
+telegrampk = typing.Annotated[int, mapped_column(BigInteger, primary_key=True)]
+
 
 class WordPartsOfSpeech(StrEnum):
     NOUN = "noun"
@@ -20,14 +23,14 @@ class WordPartsOfSpeech(StrEnum):
 
     @classmethod
     def get_valid_values(cls) -> typing.Tuple:
-        return tuple(x.value for x in cls)
+        return tuple(x.value for x in cls)   # noqa
 
 
 class Word(Model):
     __tablename__ = "words"
     metadata = MetaData()
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[intpk]
     english: Mapped[str]
     russian: Mapped[str]
     part_of_speech: Mapped[str] = Column(Enum(WordPartsOfSpeech))
@@ -37,7 +40,7 @@ class UserStatistics(Model):
     __tablename__ = "statistics"
     metadata = MetaData()
 
-    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    telegram_id: Mapped[telegrampk]
     total_quizzes: Mapped[int] = mapped_column(default=0)
     total_correct: Mapped[int] = mapped_column(default=0)
     total_incorrect: Mapped[int] = mapped_column(default=0)
@@ -49,8 +52,8 @@ class UserSettings(Model):
     __tablename__ = "settings"
     metadata = MetaData()
 
-    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    words_part_of_speech: Mapped[str | None]
+    telegram_id: Mapped[telegrampk]
+    words_part_of_speech: Mapped[typing.Optional[str]]
     quiz_answers_count: Mapped[int] = mapped_column(default=4)
 
     QUIZ_ANSWERS_COUNT_RANGE = range(3, 9)

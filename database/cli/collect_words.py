@@ -25,18 +25,7 @@ def get_engine() -> Engine:
     """
 
     if config.COLLECT_WORDS_DB_NAME:
-        return create_engine(
-            URL.create(
-                drivername="postgresql+psycopg",
-                username=config.COLLECT_WORDS_DB_USER,
-                password=config.COLLECT_WORDS_DB_PASSWORD,
-                host=config.COLLECT_WORDS_DB_HOST,
-                port=config.COLLECT_WORDS_DB_PORT,
-                database=config.COLLECT_WORDS_DB_NAME,
-            ),
-            echo=config.DEBUG,
-            pool_size=10
-        )
+        return database.get_engine(namespace="COLLECT_WORDS")
     raise exceptions.JanettoraConfigError("Collect words database configured incorrectly.", False)
 
 
@@ -48,10 +37,11 @@ def collect_words(session_maker: sessionmaker, session_maker_to_collect: session
     :param session_maker_to_collect: To-collect database session maker
     """
 
-    all_words = select(models.Word)
     with session_maker_to_collect() as lite_session:
         with session_maker() as main_session:
-            all_words = main_session.execute(all_words).all()
+            all_words = main_session.execute(
+                select(models.Word)
+            ).all()
             for word in all_words:
                 w = word[0]
                 word = models.Word(english=w.english, russian=w.russian, part_of_speech=w.part_of_speech)
