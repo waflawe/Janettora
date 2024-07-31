@@ -4,7 +4,7 @@ import typing
 from importlib import import_module
 from pathlib import Path
 
-from sqlalchemy import select, update
+from sqlalchemy import and_, desc, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 
@@ -175,6 +175,27 @@ def update_user_statistics(telegram_id: int, **kwargs) -> None:
         telegram_id=telegram_id,
         **kwargs
     )
+
+
+def get_users_top() -> typing.List:
+    top_length = config.USERS_TOP_LENGTH
+    with session_factory() as session:
+        res = session.execute(
+            select(UserStatistics)
+            .filter(
+                and_(
+                    UserStatistics.total_quizzes >= config.MINIMAL_QUIZZES_COUNT_TO_BE_IN_TOP,
+                    UserStatistics.total_incorrect > 0
+                )
+            )
+            .limit(top_length)
+            .order_by(
+                desc(
+                    UserStatistics.total_correct / UserStatistics.total_incorrect
+                )
+            )
+        )
+        return res.unique().scalars().all()
 
 
 def get_quiz_answers_count_range() -> range:

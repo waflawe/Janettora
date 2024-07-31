@@ -309,3 +309,20 @@ async def check_quiz_completion(telegram_id: int, poll: Poll) -> None:
     logger.debug(f"[JANETTORA] Checks quiz: {poll.id} completion...")
     flag = await quiz_answer_check(telegram_id, int(poll.id), -1)
     logger.debug(f"[JANETTORA] Quiz: {poll.id} passed " + ("NOT " if flag else "") + "IN-time!")
+
+
+async def get_users_top() -> typing.List:
+    """
+    Gets top of bot users.
+
+    :return: List with users of top.
+    """
+
+    top, from_cache = await redis.get(config.CACHE_USERS_TOP_VALIABLE_NAME), True
+    if not top:
+        top, from_cache = api.get_users_top(), False
+        top = pickle.dumps(top)
+        await redis.set(config.CACHE_USERS_TOP_VALIABLE_NAME, top, config.CACHE_USERS_TOP_LIVETIME)
+    top = pickle.loads(top)
+    logger.debug(f"[JANETTORA] Success get users top from cache: {from_cache}.")
+    return top

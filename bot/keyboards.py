@@ -19,6 +19,9 @@ main_kb = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="Настройки"),
             KeyboardButton(text="Статистика")
+        ],
+        [
+            KeyboardButton(text="Топ")
         ]
     ],
     resize_keyboard=True

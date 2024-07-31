@@ -33,6 +33,11 @@ class JanettoraConfig(typing.NamedTuple):
 
     # CACHE
     CACHE_SETTINGS_VARIABLE_NAME: str = "settings"
+    CACHE_USERS_TOP_VALIABLE_NAME: str = "users_top"
+    CACHE_USERS_TOP_LIVETIME: int = 10   # minutes
+
+    USERS_TOP_LENGTH: int = 10
+    MINIMAL_QUIZZES_COUNT_TO_BE_IN_TOP: int = 100
 
 
 load_dotenv()
@@ -53,5 +58,5 @@ config = JanettoraConfig(
     os.getenv("COLLECT_WORDS_DB_PASSWORD", None),
     os.getenv("COLLECT_WORDS_DB_HOST", None),
     int(os.getenv("COLLECT_WORDS_DB_PORT", -1)),
-    os.getenv("SQLITE_WORDS_DB_TO_DOCKER_NAME", "test_words.db"),
+    os.getenv("SQLITE_WORDS_DB_TO_DOCKER_NAME", "test_words.db")
 )

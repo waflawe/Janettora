@@ -119,6 +119,21 @@ async def statistics_handler(message: Message) -> None:
     await message.answer(answer)
 
 
+@dp.message(F.text == "Топ")
+async def users_top_handler(message: Message) -> None:
+    top = await bot_utils.get_users_top()
+    answer = (
+        "Топ пользователей по соотношению правильных ответов к неправильным:\n"
+        "\n"
+    )
+    for index, top_user in enumerate(top):
+        user = await bot.get_chat(top_user.telegram_id)
+        answer += (f"{index + 1}. {user.username or user.first_name} "
+                   f"({round(top_user.total_correct/top_user.total_incorrect, 2)}, {top_user.total_quizzes})\n")
+    if len(top) == 0: answer += "Топ пуст."   # noqa
+    await message.answer(answer)
+
+
 @dp.poll_answer()
 async def quiz_answer_handler(poll_answer: PollAnswer) -> None:
     await bot_utils.quiz_answer_check(
