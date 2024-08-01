@@ -178,6 +178,12 @@ def update_user_statistics(telegram_id: int, **kwargs) -> None:
 
 
 def get_users_top() -> typing.List:
+    """
+    Generates users top from main database.
+
+    :return: List of top users.
+    """
+
     top_length = config.USERS_TOP_LENGTH
     with session_factory() as session:
         res = session.execute(

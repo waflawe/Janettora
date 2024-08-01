@@ -102,13 +102,18 @@ docker-compose up
 их прохождения (число верных/неверных ответов, их отношение), статистику о частоте генераций викторин с определенными 
 настройками (например, сколько раз были сгенерированы викторины, с `quiz_answers_count` равном `3` и 
 `words_part_of_speech` равном `Фразы`). 
+
+Последней функцией бота `Janettora` является топ всех пользователей. По умолчанию, топ состоит из 10 лучших 
+пользователей по отношению правильных ответов к неправильным. Минимальное количество пройденных викторин для 
+попадания в топ - 100 (все эти цифры можно менять в файле `config.py`).
 <!-- TOC --><a name="screenshots"></a>
 ## Скриншоты 
-1. <img alt="Приветственное сообщение и клавиатура" height="500" src=".githubscreenshots/hello-message-and-keyboard.png" width="500"/>  
-2. <img alt="Викторина" height="500" src=".githubscreenshots/quiz.png" width="500"/>  
-3. <img alt="Настройки до" height="500" src=".githubscreenshots/settings-before.png" width="500"/>  
-4. <img alt="Настройки после" height="500" src=".githubscreenshots/settings-after.png" width="500"/>  
-5. <img alt="Статистика" height="500" src=".githubscreenshots/statistics.png" width="500"/>  
+1. <img alt="Приветственное сообщение и клавиатура" height="432" src=".githubscreenshots/hello-message-and-keyboard.png" width="800"/>  
+2. <img alt="Викторина" height="432" src=".githubscreenshots/quiz.png" width="800"/>  
+3. <img alt="Настройки до" height="432" src=".githubscreenshots/settings-before.png" width="800"/>  
+4. <img alt="Настройки после" height="432" src=".githubscreenshots/settings-after.png" width="800"/>  
+5. <img alt="Статистика" height="432" src=".githubscreenshots/statistics.png" width="800"/>  
+6. <img alt="Топ" height="432" src=".githubscreenshots/top.png" width="800"/>  
 <!-- TOC --><a name="settings-description"></a>  
 ## Описание настроек
 <!-- TOC --><a name="runtime-settings"></a>

@@ -102,13 +102,18 @@ Also, `Janettora` can keep user statistics, such as the total number of complete
 their completion (number of correct/incorrect answers, their ratio), statistics on the frequency of generation of quizzes with certain
 settings (for example, how many times quizzes were generated, with `quiz_answers_count` equal to `3` and
 `words_part_of_speech` equal to `Phrases`).
+
+The last feature of the `Janettora` bot is the top of all users. By default, the top consists of the top 10 users by the ratio of 
+correct answers to incorrect answers. The minimum number of quizzes passed to get to the top is 100 (all these numbers can be changed 
+in the `config.py` file).
 <!-- TOC --><a name="screenshots"></a>
 ## Screenshots
-1. <img alt="Welcome message and keyboard" height="500" src=".githubscreenshots/hello-message-and-keyboard.png" width="500"/>
-2. <img alt="Quiz" height="500" src=".githubscreenshots/quiz.png" width="500"/>
-3. <img alt="Settings before" height="500" src=".githubscreenshots/settings-before.png" width="500"/>
-4. <img alt="Settings after" height="500" src=".githubscreenshots/settings-after.png" width="500"/>
-5. <img alt="Statistics" height="500" src=".githubscreenshots/statistics.png" width="500"/>
+1. <img alt="Welcome message and keyboard" height="432" src=".githubscreenshots/hello-message-and-keyboard.png" width="800"/>
+2. <img alt="Quiz" height="432" src=".githubscreenshots/quiz.png" width="800"/>
+3. <img alt="Settings before" height="432" src=".githubscreenshots/settings-before.png" width="800"/>
+4. <img alt="Settings after" height="432" src=".githubscreenshots/settings-after.png" width="800"/>
+5. <img alt="Statistics" height="432" src=".githubscreenshots/statistics.png" width="800"/>  
+6. <img alt="Top" height="432" src=".githubscreenshots/top.png" width="800"/>  
 <!-- TOC --><a name="settings-description"></a>
 ## Description of settings
 <!-- TOC --><a name="runtime-settings"></a>
